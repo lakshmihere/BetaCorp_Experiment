@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BetaCorp GenAI Experiment Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --border: #e2e2ea;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --danger-soft: #fef2f2;
+      --radius-lg: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      width: 100%;
+      max-width: 1200px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    .subtitle {
+      margin: 4px 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 800px;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .grid-2 {
+        grid-template-columns: 2fr 1.3fr;
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .kpis {
+      display: grid;
+      gap: 10px;
+    }
+    @media (min-width: 700px) {
+      .kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+    .kpi-card {
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: #f9fafb;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .kpi-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .kpi-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: #f9fafb;
+      margin-right: 6px;
+    }
+    .tag-treatment {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    canvas {
+      max-width: 100%;
+    }
+    .xai-list {
+      margin: 4px 0 0;
+      padding-left: 1.1rem;
+      font-size: 0.86rem;
+    }
+    .xai-note {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .footer {
+      margin-top: 18px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Peer-Mentor & Leadership GenAI Experiment Dashboard</h1>
+    <p class="subtitle">
+      Tracking how <b>peer mentorship</b>, <b>leadership endorsement</b>, and
+      <b>micro-literacy training</b> shift confidence, trust, usage, and
+      workflow integration for BetaCorp’s moderate/hesitant users.
+    </p>
+
+    <!-- KPI row -->
+    <div class="card">
+      <div class="card-title">Key Outcomes (Treatment vs Control)</div>
+      <div class="card-subtitle">
+        Each metric shows uplift from baseline for Group A (Treatment) compared
+        to Group B (Control).
+      </div>
+      <div class="kpis" id="kpiRow">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Charts + XAI explanation -->
+    <div class="grid grid-2" style="margin-top: 16px;">
+      <div class="card">
+        <div class="card-title">Experiment Metrics Over Time</div>
+        <div class="card-subtitle">
+          Pre vs Post scores for <b>Confidence</b>, <b>Usage</b>,
+          <b>Trust</b>, and <b>Workflow Integration</b>.
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span class="tag tag-treatment">Group A · Treatment</span>
+          <span class="tag">Group B · Control</span>
+        </div>
+        <canvas id="confidenceChart" height="140"></canvas>
+        <canvas id="usageChart" height="140" style="margin-top: 20px;"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Explainable Outcome Summary (XAI)</div>
+        <div class="card-subtitle">
+          Why is the treatment working (or not)? Top drivers based on the data.
+        </div>
+        <div id="xaiPanel">
+          <!-- injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 16px;">
+      <div class="card">
+        <div class="card-title">Trust & Governance Metrics</div>
+        <div class="card-subtitle">
+          Change in perceived governance clarity and output reliability.
+        </div>
+        <canvas id="trustChart" height="140"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">Workflow Integration</div>
+        <div class="card-subtitle">
+          Increase in integrated GenAI workflow usage (e.g., embedded in tools,
+          recurring tasks).
+        </div>
+        <canvas id="workflowChart" height="140"></canvas>
+      </div>
+    </div>
+
+    <div class="footer">BetaCorp · Turning Adoption Into Advantage</div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------------
+    // 1. SAMPLE DATA – replace these values with your real experiment data
+    // -------------------------------------------------------------------
+    const experimentData = {
+      treatment: {
+        label: "Group A · Treatment",
+        // Pre and post metrics (averages for the group)
+        confidence: { pre: 2.4, post: 3.1 },
+        usage: { pre: 3.0, post: 6.2 }, // weekly uses
+        trust: { pre: 2.3, post: 3.0 },
+        workflow: { pre: 1.8, post: 2.3 }
+      },
+      control: {
+        label: "Group B · Control",
+        confidence: { pre: 2.5, post: 2.7 },
+        usage: { pre: 3.1, post: 3.6 },
+        trust: { pre: 2.4, post: 2.5 },
+        workflow: { pre: 1.7, post: 1.9 }
+      }
+    };
+
+    // -------------------------------------------------------------------
+    // 2. Derived metrics for KPI cards
+    // -------------------------------------------------------------------
+    function upliftPercent(pre, post) {
+      if (pre === 0) return 0;
+      return ((post - pre) / pre) * 100;
+    }
+
+    const kpiMetrics = [
+      {
+        key: "confidence",
+        label: "Confidence uplift",
+        unit: "%",
+        desc: "Increase in self-reported confidence",
+      },
+      {
+        key: "usage",
+        label: "Usage uplift",
+        unit: "%",
+        desc: "Increase in weekly GenAI usage",
+      },
+      {
+        key: "trust",
+        label: "Trust uplift",
+        unit: "%",
+        desc: "Increase in trust & governance clarity",
+      },
+      {
+        key: "workflow",
+        label: "Workflow integration uplift",
+        unit: "%",
+        desc: "Increase in integrated workflow use",
+      }
+    ];
+
+    const kpiRow = document.getElementById("kpiRow");
+
+    kpiMetrics.forEach((m) => {
+      const trPre = experimentData.treatment[m.key].pre;
+      const trPost = experimentData.treatment[m.key].post;
+      const ctrlPre = experimentData.control[m.key].pre;
+      const ctrlPost = experimentData.control[m.key].post;
+
+      const trUplift = upliftPercent(trPre, trPost);
+      const ctrlUplift = upliftPercent(ctrlPre, ctrlPost);
+      const delta = trUplift - ctrlUplift;
+
+      const card = document.createElement("div");
+      card.className = "kpi-card";
+      card.innerHTML = `
+        <div class="kpi-label">${m.label}</div>
+        <div class="kpi-value">${delta.toFixed(1)}${m.unit}</div>
+        <div class="kpi-tag">Treatment vs Control uplift</div>
+      `;
+      kpiRow.appendChild(card);
+    });
+
+    // -------------------------------------------------------------------
+    // 3. Charts
+    // -------------------------------------------------------------------
+    const paletteTreatment = "rgba(37, 99, 235, 0.85)";
+    const paletteControl = "rgba(148, 163, 184, 0.85)";
+
+    function buildPrePostChart(ctx, title, metricKey, yLabel) {
+      const t = experimentData.treatment[metricKey];
+      const c = experimentData.control[metricKey];
+
+      return new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Baseline", "Post-Intervention"],
+          datasets: [
+            {
+              label: experimentData.treatment.label,
+              data: [t.pre, t.post],
+              backgroundColor: paletteTreatment
+            },
+            {
+              label: experimentData.control.label,
+              data: [c.pre, c.post],
+              backgroundColor: paletteControl
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: title
+            },
+            legend: {
+              position: "bottom"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { drawBorder: false, color: "#e5e7eb" },
+              title: { display: !!yLabel, text: yLabel }
+            },
+            x: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    buildPrePostChart(
+      document.getElementById("confidenceChart"),
+      "Confidence (1–5)",
+      "confidence",
+      "Confidence score"
+    );
+
+    buildPrePostChart(
+      document.getElementById("usageChart"),
+      "Weekly GenAI Usage",
+      "usage",
+      "Uses per week"
+    );
+
+    buildPrePostChart(
+      document.getElementById("trustChart"),
+      "Trust & Governance Clarity (1–5)",
+      "trust",
+      "Trust score"
+    );
+
+    buildPrePostChart(
+      document.getElementById("workflowChart"),
+      "Workflow Integration (0–3)",
+      "workflow",
+      "Integration score"
+    );
+
+    // -------------------------------------------------------------------
+    // 4. XAI-style explanation panel
+    // -------------------------------------------------------------------
+    function buildXaiExplanation() {
+      const panel = document.getElementById("xaiPanel");
+      const components = [
+        {
+          key: "confidence",
+          name: "Confidence",
+          weight: 1.0
+        },
+        {
+          key: "usage",
+          name: "Usage frequency",
+          weight: 1.0
+        },
+        {
+          key: "trust",
+          name: "Trust & governance clarity",
+          weight: 0.9
+        },
+        {
+          key: "workflow",
+          name: "Workflow integration",
+          weight: 0.8
+        }
+      ];
+
+      // Score each component by delta uplift (treatment vs control)
+      const scored = components.map((c) => {
+        const t = experimentData.treatment[c.key];
+        const b = experimentData.control[c.key];
+        const tU = upliftPercent(t.pre, t.post);
+        const bU = upliftPercent(b.pre, b.post);
+        const delta = (tU - bU) * c.weight;
+        return { ...c, delta };
+      });
+
+      const sorted = scored.slice().sort((a, b) => b.delta - a.delta);
+      const top2 = sorted.slice(0, 2);
+      const weakest = sorted[sorted.length - 1];
+
+      panel.innerHTML = `
+        <ul class="xai-list">
+          ${top2
+            .map(
+              (d) =>
+                `<li><b>${d.name}</b> shows the strongest positive uplift for the treatment group versus control, indicating this intervention is especially effective here.</li>`
+            )
+            .join("")}
+          <li><b>${weakest.name}</b> is the weakest relative driver, suggesting room to refine the intervention or supporting tools in this area.</li>
+        </ul>
+        <p class="xai-note">
+          Interpretation: the combination of <b>peer mentorship</b>, 
+          <b>leadership endorsement</b>, and <b>quick literacy training</b> 
+          appears to have the greatest effect on the dimensions listed above as 
+          top drivers. Focus future iterations on reinforcing these, while 
+          improving the weakest dimension to unlock further adoption.
+        </p>
+      `;
+    }
+
+    buildXaiExplanation();
+  </script>
+</body>
+</html>
