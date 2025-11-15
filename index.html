@@ -18,6 +18,18 @@
       --radius-lg: 16px;
       --radius-sm: 10px;
       --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+
+      --good-bg: #ecfdf3;
+      --good-border: #22c55e;
+      --good-text: #166534;
+
+      --warn-bg: #fffbeb;
+      --warn-border: #facc15;
+      --warn-text: #854d0e;
+
+      --bad-bg: #fef2f2;
+      --bad-border: #ef4444;
+      --bad-text: #991b1b;
     }
 
     * { box-sizing: border-box; }
@@ -116,9 +128,15 @@
 
     .kpi-card {
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
       padding: 8px 10px;
       background: #f9fafb;
+      border: 1px solid var(--border);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
     }
 
     .kpi-label {
@@ -128,13 +146,83 @@
     }
 
     .kpi-value {
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 2px;
     }
 
     .kpi-tag {
       font-size: 0.75rem;
       color: var(--muted);
+    }
+
+    .kpi-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .kpi-good {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+
+    .kpi-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .kpi-bad {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .decision-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .decision-main {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .decision-sub {
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .decision-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 2px solid currentColor;
+    }
+
+    .decision-scale {
+      background: var(--good-bg);
+      color: var(--good-text);
+      border-color: var(--good-border);
+    }
+
+    .decision-iterate {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      border-color: var(--warn-border);
+    }
+
+    .decision-redesign {
+      background: var(--bad-bg);
+      color: var(--bad-text);
+      border-color: var(--bad-border);
     }
 
     .tag {
@@ -297,22 +385,28 @@
           (XAI)</b>-style insights about trust, literacy, and leadership impact.
         </p>
         <p class="exp-block">
-          The dashboard below is a first prototype: it visualizes
-          <b>Treatment vs Control</b> and explains which factors are driving
-          adoption changes.
+          The dashboard below is a colorful prototype: it visualizes
+          <b>Treatment vs Control</b>, color-codes decision metrics, and
+          surfaces a clear <b>Scale / Iterate / Redesign</b> recommendation.
         </p>
       </div>
     </div>
 
     <!-- DASHBOARD SECTION -->
     <div class="card" style="margin-top:18px;">
-      <div class="section-title">Experiment Dashboard – Treatment vs Control</div>
+      <div class="section-title">Experiment Dashboard – Decision View</div>
       <p class="card-subtitle">
         Replace the example numbers in the <span class="code-tag">experimentData</span>
-        object in the code with your real experiment results (pre/post averages for
-        Group A and Group B).
+        object in the code with your real experiment results (pre/post averages
+        for Group A and Group B).
       </p>
 
+      <!-- Decision Summary -->
+      <div id="decisionSummary" class="decision-card decision-scale">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- KPI cards -->
       <div class="kpis" id="kpiRow"></div>
     </div>
 
@@ -320,7 +414,7 @@
       <div class="card">
         <div class="card-title">Core Metrics – Pre vs Post</div>
         <p class="card-subtitle">
-          For Confidence and Weekly Usage across Treatment (Group A) and Control (Group B).
+          Confidence and Weekly Usage across Treatment (Group A) and Control (Group B).
         </p>
         <div class="pill-row">
           <span class="tag tag-treatment">Group A · Treatment</span>
@@ -333,8 +427,8 @@
       <div class="card">
         <div class="card-title">Explainable Outcome Summary (XAI)</div>
         <p class="card-subtitle">
-          High-level explanation of which dimensions show the strongest uplift and which
-          are lagging for the Treatment group compared to Control.
+          High-level explanation of which dimensions show the strongest uplift and
+          which are lagging for the Treatment group compared to Control.
         </p>
         <div id="xaiPanel"></div>
       </div>
@@ -386,6 +480,14 @@
       return ((post - pre) / pre) * 100;
     }
 
+    // Thresholds based on your decision criteria
+    const thresholds = {
+      confidence: 20, // %
+      usage: 25,      // %
+      trust: 25,      // %
+      workflow: 20    // %
+    };
+
     // KPI cards
     const kpiMetrics = [
       { key: "confidence", label: "Confidence uplift", unit: "%", desc: "Increase in self-reported confidence" },
@@ -395,6 +497,15 @@
     ];
 
     const kpiRow = document.getElementById("kpiRow");
+
+    function classifyMetricDelta(metricKey, delta) {
+      const t = thresholds[metricKey] || 20;
+      if (delta >= t) return "good";
+      if (delta >= 10) return "warn";
+      return "bad";
+    }
+
+    const metricDecisions = {};
 
     kpiMetrics.forEach((m) => {
       const trPre = experimentData.treatment[m.key].pre;
@@ -406,15 +517,60 @@
       const ctrlUplift = upliftPercent(ctrlPre, ctrlPost);
       const delta = trUplift - ctrlUplift;
 
+      const status = classifyMetricDelta(m.key, delta);
+      metricDecisions[m.key] = { delta, status };
+
+      let cardClass = "kpi-card ";
+      let statusText = "";
+      if (status === "good") {
+        cardClass += "kpi-good";
+        statusText = "On Track";
+      } else if (status === "warn") {
+        cardClass += "kpi-warn";
+        statusText = "Needs Attention";
+      } else {
+        cardClass += "kpi-bad";
+        statusText = "Off Track";
+      }
+
       const card = document.createElement("div");
-      card.className = "kpi-card";
+      card.className = cardClass;
       card.innerHTML = `
+        <div class="kpi-status">${statusText}</div>
         <div class="kpi-label">${m.label}</div>
         <div class="kpi-value">${delta.toFixed(1)}${m.unit}</div>
         <div class="kpi-tag">Treatment vs Control uplift</div>
       `;
       kpiRow.appendChild(card);
     });
+
+    // Overall decision summary
+    function overallDecision(metricDecisions) {
+      const values = Object.values(metricDecisions);
+      const goodCount = values.filter(v => v.status === "good").length;
+      const warnCount = values.filter(v => v.status === "warn").length;
+      const badCount = values.filter(v => v.status === "bad").length;
+
+      if (goodCount >= 3 && badCount === 0) {
+        return { label: "Scale", class: "decision-scale", text: "Evidence strongly supports scaling this intervention to more teams." };
+      }
+      if (badCount >= 2) {
+        return { label: "Redesign", class: "decision-redesign", text: "Results are weak or inconsistent. Redesign the intervention before further rollout." };
+      }
+      return { label: "Iterate", class: "decision-iterate", text: "Some metrics are promising, but not enough to scale. Refine and re-test on a focused cohort." };
+    }
+
+    const decision = overallDecision(metricDecisions);
+    const decisionSummary = document.getElementById("decisionSummary");
+    decisionSummary.classList.remove("decision-scale", "decision-iterate", "decision-redesign");
+    decisionSummary.classList.add(decision.class);
+    decisionSummary.innerHTML = `
+      <div>
+        <div class="decision-main">${decision.label} the Intervention</div>
+        <div class="decision-sub">${decision.text}</div>
+      </div>
+      <div class="decision-label">${decision.label}</div>
+    `;
 
     // Charts
     const paletteTreatment = "rgba(37, 99, 235, 0.85)";
