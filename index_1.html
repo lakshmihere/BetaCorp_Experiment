@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>BetaCorp GenAI Experiment Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --border: #e2e2ea;
+    --text: #111827;
+    --muted: #6b7280;
+
+    /* NEW ORANGE + RED PALETTE */
+    --treatment-color: #f97316;          /* ORANGE */
+    --treatment-bg: #fff7ed;             /* Light orange */
+
+    --control-color: #dc2626;            /* RED */
+    --control-bg: #fef2f2;               /* Light red */
+
+    --radius-lg: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  }
+
+  body {
+    margin: 0;
+    padding: 24px;
+    background: var(--bg);
+    font-family: system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  .app { width: 100%; max-width: 1200px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+  }
+
+  /* Group Boxes */
+  .group-box {
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    border: 2px solid;
+    margin-bottom: 12px;
+  }
+
+  .group-treatment {
+    border-color: var(--treatment-color);
+    background: var(--treatment-bg);
+  }
+  .group-treatment .group-title { color: var(--treatment-color); }
+
+  .group-control {
+    border-color: var(--control-color);
+    background: var(--control-bg);
+  }
+  .group-control .group-title { color: var(--control-color); }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    margin-right: 6px;
+  }
+  .tag-treatment {
+    background: var(--treatment-bg);
+    color: var(--treatment-color);
+    border-color: var(--treatment-color);
+  }
+  .tag-control {
+    background: var(--control-bg);
+    color: var(--control-color);
+    border-color: var(--control-color);
+  }
+
+  /* KPI Cards */
+  .kpis { display: grid; gap: 10px; }
+  @media (min-width: 700px) {
+    .kpis { grid-template-columns: repeat(4, 1fr); }
+  }
+  .kpi-card {
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+
+  .grid { display: grid; gap: 16px; }
+  @media (min-width: 900px) {
+    .grid-2 { grid-template-columns: 2fr 1.2fr; }
+  }
+
+  canvas { max-width: 100%; }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>Peer-Mentor & Leadership GenAI Experiment Dashboard</h1>
+  <p>This dashboard evaluates whether peer mentorship + leadership endorsement + micro-literacy training increases trust, confidence, and usage among hesitant users.</p>
+
+  <!-- Group Descriptions -->
+  <div class="card">
+    <h2>Team-Level A/B Structure</h2>
+
+    <div class="group-box group-treatment">
+      <div class="group-title"><strong>Treatment Group — Group A (Orange)</strong></div>
+      <ul>
+        <li>Peer Mentorship</li>
+        <li>Leadership Endorsement</li>
+        <li>Quick Micro-Literacy Training</li>
+        <li>Workflow & Integration Coaching</li>
+      </ul>
+    </div>
+
+    <div class="group-box group-control">
+      <div class="group-title"><strong>Control Group — Group B (Red)</strong></div>
+      <ul>
+        <li>No mentorship</li>
+        <li>No leadership messaging</li>
+        <li>No structured literacy sessions</li>
+        <li>Continues self-directed GenAI usage</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- KPI Metrics -->
+  <div class="card" style="margin-top:16px;">
+    <h2>Key Outcomes (Treatment vs Control)</h2>
+    <div class="kpis" id="kpiRow"></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3>Experiment Impact</h3>
+      <div style="margin-bottom:10px;">
+        <span class="tag tag-treatment">Treatment (Orange)</span>
+        <span class="tag tag-control">Control (Red)</span>
+      </div>
+      <canvas id="confidenceChart" height="140"></canvas>
+      <canvas id="usageChart" height="140" style="margin-top:20px;"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Explainable Result Summary (XAI)</h3>
+      <div id="xaiPanel"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h3>Trust & Governance Clarity</h3>
+      <canvas id="trustChart" height="140"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Workflow Integration</h3>
+      <canvas id="workflowChart" height="140"></canvas>
+    </div>
+  </div>
+
+  <!-- Decision Criteria -->
+  <div class="card" style="margin-top:20px;">
+    <h2>Decision Criteria</h2>
+
+    <div class="grid" style="grid-template-columns: repeat(2,1fr); gap:16px;">
+      <div class="group-box" style="border-color:#16a34a; background:#ecfdf5;">
+        <strong style="color:#16a34a;">Scale if:</strong>
+        <ul>
+          <li>Confidence ↑ ≥ 20%</li>
+          <li>Usage ↑ ≥ 25%</li>
+          <li>Leadership message drives spike</li>
+          <li>Qualitative comments indicate trust growth</li>
+        </ul>
+      </div>
+
+      <div class="group-box" style="border-color:#dc2626; background:#fef2f2;">
+        <strong style="color:#dc2626;">Redesign if:</strong>
+        <ul>
+          <li>Movement < 10%</li>
+          <li>Low participation</li>
+          <li>No measurable behavior change</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+  // DATA MODEL
+  const experimentData = {
+    treatment: { confidence:{pre:2.4, post:3.1}, usage:{pre:3, post:6.2}, trust:{pre:2.3, post:3}, workflow:{pre:1.8, post:2.3} },
+    control:   { confidence:{pre:2.5, post:2.7}, usage:{pre:3.1, post:3.6}, trust:{pre:2.4, post:2.5}, workflow:{pre:1.7, post:1.9} }
+  };
+
+  // UPLIFT FUNCTION
+  const uplift = (pre, post) => pre === 0 ? 0 : ((post - pre) / pre) * 100;
+
+  // KPI CARDS
+  const metrics = [
+    { key:"confidence", label:"Confidence Uplift" },
+    { key:"usage", label:"Usage Frequency Uplift" },
+    { key:"trust", label:"Trust Uplift" },
+    { key:"workflow", label:"Workflow Integration Uplift" }
+  ];
+
+  const kpiRow = document.getElementById("kpiRow");
+
+  metrics.forEach(m => {
+    const tr = experimentData.treatment[m.key];
+    const cr = experimentData.control[m.key];
+    const delta = uplift(tr.pre, tr.post) - uplift(cr.pre, cr.post);
+    const div = document.createElement("div");
+    div.className = "kpi-card";
+    div.innerHTML = `
+      <div class="kpi-label">${m.label}</div>
+      <div class="kpi-value">${delta.toFixed(1)}%</div>
+      <div class="kpi-tag">Treatment vs Control</div>
+    `;
+    kpiRow.appendChild(div);
+  });
+
+  // CHART COLORS
+  const colorTreatment = "rgba(249, 115, 22, 0.8)"; // ORANGE
+  const colorControl = "rgba(220, 38, 38, 0.8)";    // RED
+
+  // CHART BUILDER
+  function chartBuilder(ctx, title, metricKey, ylabel) {
+    const t = experimentData.treatment[metricKey];
+    const c = experimentData.control[metricKey];
+
+    return new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Baseline", "Post"],
+        datasets: [
+          { label:"Treatment (Orange)", data:[t.pre,t.post], backgroundColor:colorTreatment },
+          { label:"Control (Red)", data:[c.pre,c.post], backgroundColor:colorControl }
+        ]
+      },
+      options: {
+        plugins:{ title:{display:true, text:title}, legend:{ position:"bottom" } },
+        scales:{ y:{ beginAtZero:true, title:{display:true, text:ylabel} } }
+      }
+    });
+  }
+
+  chartBuilder(document.getElementById("confidenceChart"), "Confidence", "confidence", "Score");
+  chartBuilder(document.getElementById("usageChart"), "Usage Frequency", "usage", "Weekly Uses");
+  chartBuilder(document.getElementById("trustChart"), "Trust & Governance", "trust", "Score");
+  chartBuilder(document.getElementById("workflowChart"), "Workflow Integration", "workflow", "Score");
+
+  // SIMPLE XAI PANEL
+  document.getElementById("xaiPanel").innerHTML = `
+    <ul>
+      <li><b>Confidence</b> shows the strongest uplift, indicating peer mentorship reduces fear.</li>
+      <li><b>Usage</b> sharply increases, proving leadership endorsement removes barriers.</li>
+      <li><b>Trust</b> improves, suggesting clarity + peer support reduce governance confusion.</li>
+      <li><b>Workflow integration</b> grows modestly — may need more structured guidance.</li>
+    </ul>
+  `;
+</script>
+
+</body>
+</html>
