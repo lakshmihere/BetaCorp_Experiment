@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>BetaCorp GenAI Experiment Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --border: #e2e2ea;
+    --text: #111827;
+    --muted: #6b7280;
+
+    /* NEW ORANGE + RED PALETTE */
+    --treatment-color: #f97316;          /* ORANGE */
+    --treatment-bg: #fff7ed;             /* Light orange */
+
+    --control-color: #dc2626;            /* RED */
+    --control-bg: #fef2f2;               /* Light red */
+
+    --radius-lg: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  }
+
+  body {
+    margin: 0;
+    padding: 24px;
+    background: var(--bg);
+    font-family: system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  .app { width: 100%; max-width: 1200px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+  }
+
+  /* Group Boxes */
+  .group-box {
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    border: 2px solid;
+    margin-bottom: 12px;
+  }
+
+  .group-treatment {
+    border-color: var(--treatment-color);
+    background: var(--treatment-bg);
+  }
+  .group-treatment .group-title { color: var(--treatment-color); }
+
+  .group-control {
+    border-color: var(--control-color);
+    background: var(--control-bg);
+  }
+  .group-control .group-title { color:
