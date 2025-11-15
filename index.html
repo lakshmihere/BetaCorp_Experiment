@@ -30,6 +30,11 @@
       --bad-bg: #fef2f2;
       --bad-border: #ef4444;
       --bad-text: #991b1b;
+
+      --treatment-bg: #eff6ff;
+      --treatment-border: #2563eb;
+      --control-bg: #f9fafb;
+      --control-border: #d1d5db;
     }
 
     * { box-sizing: border-box; }
@@ -113,6 +118,62 @@
     .exp-block {
       font-size: 0.88rem;
       margin: 4px 0 0;
+    }
+
+    .group-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 700px) {
+      .group-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .group-card {
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
+      font-size: 0.86rem;
+    }
+
+    .group-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .group-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      margin-left: 6px;
+      border: 1px solid var(--control-border);
+      color: var(--muted);
+      background: #f3f4f6;
+    }
+
+    .group-treatment {
+      background: var(--treatment-bg);
+      border-color: var(--treatment-border);
+    }
+
+    .group-treatment .group-title {
+      color: var(--accent);
+    }
+
+    .group-treatment .group-tag {
+      border-color: var(--treatment-border);
+      color: var(--accent);
+      background: #dbeafe;
+    }
+
+    .group-control {
+      background: var(--control-bg);
+      border-color: var(--control-border);
     }
 
     .kpis {
@@ -225,6 +286,36 @@
       border-color: var(--bad-border);
     }
 
+    .criteria-box {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      margin-top: 6px;
+    }
+
+    .criteria-good {
+      background: var(--good-bg);
+      border: 1px solid var(--good-border);
+      color: var(--good-text);
+    }
+
+    .criteria-bad {
+      background: var(--bad-bg);
+      border: 1px solid var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .criteria-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .criteria-list {
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+
     .tag {
       display: inline-flex;
       align-items: center;
@@ -309,25 +400,35 @@
           with uncertainty and trust.
         </p>
 
-        <div class="card-title" style="margin-top:10px;">(iii) Experiment Design</div>
-        <p class="exp-block">
-          <b>Team-level A/B experiment</b>
-        </p>
-        <ul class="exp-list">
-          <li>
-            <b>Treatment – Group A</b><br />
-            • Peer mentorship (GenAI guidance)<br />
-            • Leadership endorsement (GenAI policy & guidelines)<br />
-            • Quick literacy training<br />
-            • GenAI workflow training<br />
-            <i>Social proof + clear permission + skill → maximum adoption shift.</i>
-          </li>
-          <li style="margin-top:6px;">
-            <b>Control – Group B</b><br />
-            • Continues normal self-directed learning<br />
-            • No structured peer or leadership intervention
-          </li>
-        </ul>
+        <div class="card-title" style="margin-top:10px;">(iii) Team-level A/B Experiment</div>
+
+        <div class="group-grid">
+          <div class="group-card group-treatment">
+            <div class="group-title">
+              Treatment Group – Group A
+              <span class="group-tag">High-support condition</span>
+            </div>
+            <ul class="exp-list">
+              <li>Peer mentorship (GenAI guidance)</li>
+              <li>Leadership endorsement (GenAI policy & guidelines)</li>
+              <li>Quick GenAI literacy training</li>
+              <li>GenAI strategic workflow training</li>
+              <li><i>Social proof + clear permission + skill → maximum adoption shift.</i></li>
+            </ul>
+          </div>
+
+          <div class="group-card group-control">
+            <div class="group-title">
+              Control Group – Group B
+              <span class="group-tag">Baseline condition</span>
+            </div>
+            <ul class="exp-list">
+              <li>Continues normal self-directed learning</li>
+              <li>No structured peer mentorship</li>
+              <li>No explicit leadership endorsement intervention</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -338,7 +439,7 @@
           <li>Report governance uncertainty and fear of “getting it wrong”</li>
         </ul>
 
-        <div class="card-title" style="margin-top:10px;">(v) Procedure</div>
+        <div class="card-title" style="margin-top:10px;">(v) Procedure – Step-by-Step</div>
         <ol class="exp-list" style="padding-left:1.1rem;">
           <li>Send baseline survey (confidence + trust + usage).</li>
           <li>Run micro-literacy training.</li>
@@ -362,21 +463,28 @@
     <!-- Decision Criteria & Next Steps -->
     <div class="grid grid-2-even" style="margin-top:16px;">
       <div class="card">
-        <div class="card-title">(vii) Decision Criteria</div>
-        <p class="exp-block"><b>Scale if:</b></p>
-        <ul class="exp-list">
-          <li>≥ 20% uplift in confidence.</li>
-          <li>≥ 25% increase in weekly usage.</li>
-          <li>Leadership message correlates with usage & trust spike.</li>
-          <li>Qualitative comments show improved trust & clarity.</li>
-        </ul>
-        <p class="exp-block" style="margin-top:6px;"><b>Stop or redesign if:</b></p>
-        <ul class="exp-list">
-          <li>&lt; 10% movement in key metrics.</li>
-          <li>Low participation or engagement.</li>
-          <li>No clear behavioral change in logs or workflows.</li>
-        </ul>
+        <div class="card-title">(vii) Decision Criteria – Color-coded</div>
+
+        <div class="criteria-box criteria-good">
+          <div class="criteria-title">Scale the Intervention (Green)</div>
+          <ul class="criteria-list">
+            <li>≥ 20% uplift in confidence.</li>
+            <li>≥ 25% increase in weekly usage.</li>
+            <li>Leadership message correlates with usage & trust spike.</li>
+            <li>Qualitative comments show improved trust & clarity.</li>
+          </ul>
+        </div>
+
+        <div class="criteria-box criteria-bad">
+          <div class="criteria-title">Stop / Redesign (Red)</div>
+          <ul class="criteria-list">
+            <li>&lt; 10% movement in key metrics.</li>
+            <li>Low participation or engagement.</li>
+            <li>No clear behavioral change in logs or workflows.</li>
+          </ul>
+        </div>
       </div>
+
       <div class="card">
         <div class="card-title">(viii) Next Steps</div>
         <p class="exp-block">
