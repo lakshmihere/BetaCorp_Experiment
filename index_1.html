@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BetaCorp GenAI Experiment – Peer Mentor & Leadership Trust Boost</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --border: #e2e2ea;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #ea580c;          /* ORANGE accent (Treatment) */
+      --accent-soft: #fff7ed;
+      --radius-lg: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+
+      --good-bg: #ecfdf3;
+      --good-border: #22c55e;
+      --good-text: #166534;
+
+      --warn-bg: #fffbeb;
+      --warn-border: #facc15;
+      --warn-text: #854d0e;
+
+      --bad-bg: #fef2f2;
+      --bad-border: #ef4444;
+      --bad-text: #991b1b;
+
+      /* Treatment = Orange, Control = Red */
+      --treatment-bg: #fff7ed;        /* light orange */
+      --treatment-border: #ea580c;    /* orange-600 */
+      --control-bg: #fef2f2;          /* light red */
+      --control-border: #ef4444;      /* red-500 */
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      margin: 4px 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 850px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .grid-2 {
+        grid-template-columns: 1.3fr 1.7fr;
+      }
+      .grid-2-even {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .exp-list {
+      font-size: 0.88rem;
+      margin: 6px 0 0;
+      padding-left: 1.1rem;
+    }
+
+    .exp-block {
+      font-size: 0.88rem;
+      margin: 4px 0 0;
+    }
+
+    .group-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 700px) {
+      .group-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .group-card {
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
+      font-size: 0.86rem;
+    }
+
+    .group-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .group-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      margin-left: 6px;
+      border: 1px solid var(--control-border);
+      color: var(--muted);
+      background: #f3f4f6;
+    }
+
+    /* Treatment group in ORANGE */
+    .group-treatment {
+      background: var(--treatment-bg);
+      border-color: var(--treatment-border);
+    }
+
+    .group-treatment .group-title {
+      color: var(--accent);
+    }
+
+    .group-treatment .group-tag {
+      border-color: var(--treatment-border);
+      color: var(--accent);
+      background: #fed7aa; /* soft orange */
+    }
+
+    /* Control group in RED */
+    .group-control {
+      background: var(--control-bg);
+      border-color: var(--control-border);
+    }
+
+    .group-control .group-title {
+      color: var(--bad-text);
+    }
+
+    .group-control .group-tag {
+      border-color: var(--control-border);
+      color: var(--bad-text);
+      background: #fecaca; /* soft red */
+    }
+
+    .kpis {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 700px) {
+      .kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .kpi-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .kpi-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .kpi-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .kpi-good {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+
+    .kpi-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .kpi-bad {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .decision-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .decision-main {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .decision-sub {
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .decision-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 2px solid currentColor;
+    }
+
+    .decision-scale {
+      background: var(--good-bg);
+      color: var(--good-text);
+      border-color: var(--good-border);
+    }
+
+    .decision-iterate {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+      border-color: var(--warn-border);
+    }
+
+    .decision-redesign {
+      background: var(--bad-bg);
+      color: var(--bad-text);
+      border-color: var(--bad-border);
+    }
+
+    .criteria-box {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      margin-top: 6px;
+    }
+
+    .criteria-good {
+      background: var(--good-bg);
+      border: 1px solid var(--good-border);
+      color: var(--good-text);
+    }
+
+    .criteria-bad {
+      background: var(--bad-bg);
+      border: 1px solid var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .criteria-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .criteria-list {
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: #f9fafb;
+      margin-right: 6px;
+    }
+
+    .tag-treatment {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--treatment-border);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .xai-list {
+      margin: 4px 0 0;
+      padding-left: 1.1rem;
+      font-size: 0.86rem;
+    }
+
+    .xai-note {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    canvas { max-width: 100%; }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .code-tag {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: #e5e7eb;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Experiment: Peer-Mentor & Leadership Endorsement Improves Trust</h1>
+    <p class="subtitle">
+      BetaCorp is testing whether combining <b>peer mentorship</b>,
+      <b>leadership endorsement</b>, and <b>micro-literacy training</b> can shift
+      moderate/hesitant GenAI users from cautious experimentation to confident,
+      high-value usage.
+    </p>
+
+    <!-- Experiment Description -->
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="section-title">Experiment Blueprint</div>
+
+        <div class="card-title">(i) Experiment Title</div>
+        <p class="exp-block">
+          <b>Peer-Mentor, Leadership Endorsement improves Trust</b>
+        </p>
+
+        <div class="card-title" style="margin-top:10px;">(ii) Hypothesis</div>
+        <p class="exp-block">
+          Pairing moderate/hesitant users with peer mentors and visible leadership
+          endorsement, while providing structured micro-literacy boosts, will
+          increase confidence, trust, and usage frequency by at least
+          <b>20%</b> compared to similar users who do not receive these
+          social-support interventions, because VOC shows these groups struggle
+          with uncertainty and trust.
+        </p>
+
+        <div class="card-title" style="margin-top:10px;">(iii) Team-level A/B Experiment</div>
+
+        <div class="group-grid">
+          <div class="group-card group-treatment">
+            <div class="group-title">
+              Treatment Group – Group A
+              <span class="group-tag">High-support condition</span>
+            </div>
+            <ul class="exp-list">
+              <li>Peer mentorship (GenAI guidance)</li>
+              <li>Leadership endorsement (GenAI policy & guidelines)</li>
+              <li>Quick GenAI literacy training</li>
+              <li>GenAI strategic workflow training</li>
+              <li><i>Social proof + clear permission + skill → maximum adoption shift.</i></li>
+            </ul>
+          </div>
+
+          <div class="group-card group-control">
+            <div class="group-title">
+              Control Group – Group B
+              <span class="group-tag">Baseline condition</span>
+            </div>
+            <ul class="exp-list">
+              <li>Continues normal self-directed learning</li>
+              <li>No structured peer mentorship</li>
+              <li>No explicit leadership endorsement intervention</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">(iv) Target Audience – Moderate / Hesitant Users</div>
+        <ul class="exp-list">
+          <li>Confidence score = 2 or 3 (on a 1–5 scale)</li>
+          <li>Use GenAI occasionally, not regularly</li>
+          <li>Report governance uncertainty and fear of “getting it wrong”</li>
+        </ul>
+
+        <div class="card-title" style="margin-top:10px;">(v) Procedure – Step-by-Step</div>
+        <ol class="exp-list" style="padding-left:1.1rem;">
+          <li>Send baseline survey (confidence + trust + usage).</li>
+          <li>Run micro-literacy training.</li>
+          <li>Assign peer mentors.</li>
+          <li>Leadership issues endorsement message.</li>
+          <li>Run GenAI Strategic Workflow Integration training.</li>
+          <li>Collect usage analytics and qualitative comments.</li>
+          <li>Run post-intervention survey.</li>
+        </ol>
+
+        <div class="card-title" style="margin-top:10px;">(vi) Success Metrics</div>
+        <ul class="exp-list">
+          <li><b>Confidence:</b> Treatment outperforms Control by +20–30% uplift.</li>
+          <li><b>Usage Frequency:</b> 2× increase in weekly GenAI usage (Treatment).</li>
+          <li><b>Trust in AI:</b> +25% increase in governance & reliability scores (Treatment).</li>
+          <li><b>Workflow Integration:</b> +20% increase in integrated tool usage (Treatment).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Decision Criteria & Next Steps -->
+    <div class="grid grid-2-even" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">(vii) Decision Criteria – Color-coded</div>
+
+        <div class="criteria-box criteria-good">
+          <div class="criteria-title">Scale the Intervention (Green)</div>
+          <ul class="criteria-list">
+            <li>≥ 20% uplift in confidence.</li>
+            <li>≥ 25% increase in weekly usage.</li>
+            <li>Leadership message correlates with usage & trust spike.</li>
+            <li>Qualitative comments show improved trust & clarity.</li>
+          </ul>
+        </div>
+
+        <div class="criteria-box criteria-bad">
+          <div class="criteria-title">Stop / Redesign (Red)</div>
+          <ul class="criteria-list">
+            <li>&lt; 10% movement in key metrics.</li>
+            <li>Low participation or engagement.</li>
+            <li>No clear behavioral change in logs or workflows.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">(viii) Next Steps</div>
+        <p class="exp-block">
+          Build and iterate on a <b>dashboard UI</b> that monitors the human
+          side of GenAI adoption at BetaCorp and provides <b>explainable AI
+          (XAI)</b>-style insights about trust, literacy, and leadership impact.
+        </p>
+        <p class="exp-block">
+          The dashboard below is a colorful prototype: it visualizes
+          <b>Treatment vs Control</b>, color-codes decision metrics, and
+          surfaces a clear <b>Scale / Iterate / Redesign</b> recommendation.
+        </p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SECTION -->
+    <div class="card" style="margin-top:18px;">
+      <div class="section-title">Experiment Dashboard – Decision View</div>
+      <p class="card-subtitle">
+        Replace the example numbers in the <span class="code-tag">experimentData</span>
+        object in the code with your real experiment results (pre/post averages
+        for Group A and Group B).
+      </p>
+
+      <!-- Decision Summary -->
+      <div id="decisionSummary" class="decision-card decision-scale">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpis" id="kpiRow"></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Core Metrics – Pre vs Post</div>
+      <p class="card-subtitle">
+          Confidence and Weekly Usage across Treatment (Group A) and Control (Group B).
+        </p>
+        <div class="pill-row">
+          <span class="tag tag-treatment">Group A · Treatment (Orange)</span>
+          <span class="tag" style="border-color: var(--control-border); color: var(--bad-text); background:#fee2e2;">
+            Group B · Control (Red)
+          </span>
+        </div>
+        <canvas id="confidenceChart" height="140" style="margin-top:12px;"></canvas>
+        <canvas id="usageChart" height="140" style="margin-top:20px;"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Explainable Outcome Summary (XAI)</div>
+        <p class="card-subtitle">
+          High-level explanation of which dimensions show the strongest uplift and
+          which are lagging for the Treatment group compared to Control.
+        </p>
+        <div id="xaiPanel"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2-even" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title">Trust & Governance Clarity</div>
+        <p class="card-subtitle">
+          Change in perceived trust, policy clarity, and responsible-use confidence.
+        </p>
+        <canvas id="trustChart" height="140"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">Workflow Integration Score</div>
+        <p class="card-subtitle">
+          Increase in GenAI embedded into core workflows and strategic use cases.
+        </p>
+        <canvas id="workflowChart" height="140"></canvas>
+      </div>
+    </div>
+
+    <div class="footer">BetaCorp · Turning Adoption Into Advantage</div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------------
+    // 1. SAMPLE DATA – replace with your actual experiment results
+    // -------------------------------------------------------------------
+    const experimentData = {
+      treatment: {
+        label: "Group A · Treatment",
+        confidence: { pre: 2.4, post: 3.1 },
+        usage: { pre: 3.0, post: 6.2 },   // weekly usage
+        trust: { pre: 2.3, post: 3.0 },
+        workflow: { pre: 1.8, post: 2.3 }
+      },
+      control: {
+        label: "Group B · Control",
+        confidence: { pre: 2.5, post: 2.7 },
+        usage: { pre: 3.1, post: 3.6 },
+        trust: { pre: 2.4, post: 2.5 },
+        workflow: { pre: 1.7, post: 1.9 }
+      }
+    };
+
+    function upliftPercent(pre, post) {
+      if (pre === 0) return 0;
+      return ((post - pre) / pre) * 100;
+    }
+
+    // Thresholds based on your decision criteria
+    const thresholds = {
+      confidence: 20, // %
+      usage: 25,      // %
+      trust: 25,      // %
+      workflow: 20    // %
+    };
+
+    // KPI cards
+    const kpiMetrics = [
+      { key: "confidence", label: "Confidence uplift", unit: "%", desc: "Increase in self-reported confidence" },
+      { key: "usage", label: "Usage uplift", unit: "%", desc: "Increase in weekly GenAI usage" },
+      { key: "trust", label: "Trust uplift", unit: "%", desc: "Increase in trust & governance clarity" },
+      { key: "workflow", label: "Workflow uplift", unit: "%", desc: "Increase in integrated workflow use" }
+    ];
+
+    const kpiRow = document.getElementById("kpiRow");
+
+    function classifyMetricDelta(metricKey, delta) {
+      const t = thresholds[metricKey] || 20;
+      if (delta >= t) return "good";
+      if (delta >= 10) return "warn";
+      return "bad";
+    }
+
+    const metricDecisions = {};
+
+    kpiMetrics.forEach((m) => {
+      const trPre = experimentData.treatment[m.key].pre;
+      const trPost = experimentData.treatment[m.key].post;
+      const ctrlPre = experimentData.control[m.key].pre;
+      const ctrlPost = experimentData.control[m.key].post;
+
+      const trUplift = upliftPercent(trPre, trPost);
+      const ctrlUplift = upliftPercent(ctrlPre, ctrlPost);
+      const delta = trUplift - ctrlUplift;
+
+      const status = classifyMetricDelta(m.key, delta);
+      metricDecisions[m.key] = { delta, status };
+
+      let cardClass = "kpi-card ";
+      let statusText = "";
+      if (status === "good") {
+        cardClass += "kpi-good";
+        statusText = "On Track";
+      } else if (status === "warn") {
+        cardClass += "kpi-warn";
+        statusText = "Needs Attention";
+      } else {
+        cardClass += "kpi-bad";
+        statusText = "Off Track";
+      }
+
+      const card = document.createElement("div");
+      card.className = cardClass;
+      card.innerHTML = `
+        <div class="kpi-status">${statusText}</div>
+        <div class="kpi-label">${m.label}</div>
+        <div class="kpi-value">${delta.toFixed(1)}${m.unit}</div>
+        <div class="kpi-tag">Treatment vs Control uplift</div>
+      `;
+      kpiRow.appendChild(card);
+    });
+
+    // Overall decision summary
+    function overallDecision(metricDecisions) {
+      const values = Object.values(metricDecisions);
+      const goodCount = values.filter(v => v.status === "good").length;
+      const warnCount = values.filter(v => v.status === "warn").length;
+      const badCount = values.filter(v => v.status === "bad").length;
+
+      if (goodCount >= 3 && badCount === 0) {
+        return { label: "Scale", class: "decision-scale", text: "Evidence strongly supports scaling this intervention to more teams." };
+      }
+      if (badCount >= 2) {
+        return { label: "Redesign", class: "decision-redesign", text: "Results are weak or inconsistent. Redesign the intervention before further rollout." };
+      }
+      return { label: "Iterate", class: "decision-iterate", text: "Some metrics are promising, but not enough to scale. Refine and re-test on a focused cohort." };
+    }
+
+    const decision = overallDecision(metricDecisions);
+    const decisionSummary = document.getElementById("decisionSummary");
+    decisionSummary.classList.remove("decision-scale", "decision-iterate", "decision-redesign");
+    decisionSummary.classList.add(decision.class);
+    decisionSummary.innerHTML = `
+      <div>
+        <div class="decision-main">${decision.label} the Intervention</div>
+        <div class="decision-sub">${decision.text}</div>
+      </div>
+      <div class="decision-label">${decision.label}</div>
+    `;
+
+    // Charts – Treatment = ORANGE, Control = RED
+    const paletteTreatment = "rgba(234, 88, 12, 0.85)";  // orange-600
+    const paletteControl   = "rgba(239, 68, 68, 0.85)";  // red-500
+
+    function buildPrePostChart(ctx, title, metricKey, yLabel) {
+      const t = experimentData.treatment[metricKey];
+      const c = experimentData.control[metricKey];
+
+      return new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Baseline", "Post-Intervention"],
+          datasets: [
+            {
+              label: experimentData.treatment.label,
+              data: [t.pre, t.post],
+              backgroundColor: paletteTreatment
+            },
+            {
+              label: experimentData.control.label,
+              data: [c.pre, c.post],
+              backgroundColor: paletteControl
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: title },
+            legend: { position: "bottom" }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { drawBorder: false, color: "#e5e7eb" },
+              title: { display: !!yLabel, text: yLabel }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    buildPrePostChart(
+      document.getElementById("confidenceChart"),
+      "Confidence (1–5)",
+      "confidence",
+      "Confidence score"
+    );
+
+    buildPrePostChart(
+      document.getElementById("usageChart"),
+      "Weekly GenAI Usage",
+      "usage",
+      "Uses per week"
+    );
+
+    buildPrePostChart(
+      document.getElementById("trustChart"),
+      "Trust & Governance Clarity (1–5)",
+      "trust",
+      "Trust score"
+    );
+
+    buildPrePostChart(
+      document.getElementById("workflowChart"),
+      "Workflow Integration (0–3)",
+      "workflow",
+      "Integration score"
+    );
+
+    // XAI explanation panel
+    function buildXaiExplanation() {
+      const panel = document.getElementById("xaiPanel");
+      const components = [
+        { key: "confidence", name: "Confidence", weight: 1.0 },
+        { key: "usage", name: "Usage frequency", weight: 1.0 },
+        { key: "trust", name: "Trust & governance clarity", weight: 0.9 },
+        { key: "workflow", name: "Workflow integration", weight: 0.8 }
+      ];
+
+      const scored = components.map((c) => {
+        const t = experimentData.treatment[c.key];
+        const b = experimentData.control[c.key];
+        const tU = upliftPercent(t.pre, t.post);
+        const bU = upliftPercent(b.pre, b.post);
+        const delta = (tU - bU) * c.weight;
+        return { ...c, delta };
+      });
+
+      const sorted = scored.slice().sort((a, b) => b.delta - a.delta);
+      const top2 = sorted.slice(0, 2);
+      const weakest = sorted[sorted.length - 1];
+
+      panel.innerHTML = `
+        <ul class="xai-list">
+          ${top2
+            .map(
+              (d) =>
+                `<li><b>${d.name}</b> shows the strongest positive uplift for the treatment group versus control, indicating this intervention is especially effective here.</li>`
+            )
+            .join("")}
+          <li><b>${weakest.name}</b> is the weakest relative driver, suggesting room to refine the intervention or supporting tools in this area.</li>
+        </ul>
+        <p class="xai-note">
+          Interpretation: the combination of <b>peer mentorship</b>, 
+          <b>leadership endorsement</b>, and <b>quick literacy training</b> 
+          appears to have the greatest effect on the dimensions listed above as 
+          top drivers. Focus future iterations on reinforcing these, while 
+          improving the weakest dimension to unlock further adoption.
+        </p>
+      `;
+    }
+
+    buildXaiExplanation();
+  </script>
+</body>
+</html>
