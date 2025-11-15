@@ -405,7 +405,7 @@
         <div class="group-grid">
           <div class="group-card group-treatment">
             <div class="group-title">
-              Treatment Group – Group A
+              Treatment Group 
               <span class="group-tag">High-support condition</span>
             </div>
             <ul class="exp-list">
@@ -419,7 +419,7 @@
 
           <div class="group-card group-control">
             <div class="group-title">
-              Control Group – Group B
+              Control Group 
               <span class="group-tag">Baseline condition</span>
             </div>
             <ul class="exp-list">
@@ -463,7 +463,7 @@
     <!-- Decision Criteria & Next Steps -->
     <div class="grid grid-2-even" style="margin-top:16px;">
       <div class="card">
-        <div class="card-title">(vii) Decision Criteria – Color-coded</div>
+        <div class="card-title">(vii) Decision Criteria </div>
 
         <div class="criteria-box criteria-good">
           <div class="criteria-title">Scale the Intervention (Green)</div>
@@ -522,10 +522,10 @@
       <div class="card">
         <div class="card-title">Core Metrics – Pre vs Post</div>
         <p class="card-subtitle">
-          Confidence and Weekly Usage across Treatment (Group A) and Control (Group B).
+          Confidence and Weekly Usage across Treatment Group and Control Group.
         </p>
         <div class="pill-row">
-          <span class="tag tag-treatment">Group A · Treatment</span>
+          <span class="tag tag-treatment">Group · Treatment</span>
           <span class="tag">Group B · Control</span>
         </div>
         <canvas id="confidenceChart" height="140" style="margin-top:12px;"></canvas>
@@ -568,14 +568,14 @@
     // -------------------------------------------------------------------
     const experimentData = {
       treatment: {
-        label: "Group A · Treatment",
+        label: "Group · Treatment",
         confidence: { pre: 2.4, post: 3.1 },
         usage: { pre: 3.0, post: 6.2 },   // weekly usage
         trust: { pre: 2.3, post: 3.0 },
         workflow: { pre: 1.8, post: 2.3 }
       },
       control: {
-        label: "Group B · Control",
+        label: "Group · Control",
         confidence: { pre: 2.5, post: 2.7 },
         usage: { pre: 3.1, post: 3.6 },
         trust: { pre: 2.4, post: 2.5 },
